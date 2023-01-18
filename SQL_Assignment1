@@ -1,0 +1,113 @@
+create or replace warehouse kunika with warehouse_size='SMALL';
+CREATE DATABASE KUNIKA1;
+
+----------------------------------------------------------- TASK1 ---------------------------------------------------------
+
+CREATE TABLE shopping_history(
+
+  product varchar not null,
+  quantity integer not null,
+  unit_price integer not null
+);
+
+INSERT INTO shopping_history(product,quantity,unit_price) values
+('Milk',4,31),
+('Vegetables',5,20),
+('Bread',2,35),
+('Snacks',4,10),
+('Butter',2,50),
+('Ghee',3,200),
+('Surf',2,148),
+('Soap',6,12),
+('Facewash',2,150),
+('Tissue',5,35);
+
+select * from shopping_history
+
+select product,sum(quantity * unit_price) as total_price 
+from shopping_history 
+group by product
+Order By product desc;
+
+
+
+-----------------------------------------------------------TASK2----------------------------------------------------------------
+
+create table phones(
+name varchar(30) not null unique,
+phone_number integer not null unique
+);
+
+create table calls(
+id integer not null,
+caller integer not null,
+callee integer not null,
+duration integer not null,
+unique(id)
+);
+
+insert into phones(name,phone_number) values
+('Jack',1234),
+('Lena',3333),
+('Mark',9999),
+('Anna',7582);
+
+select * from phones;
+
+insert into calls(id,caller,callee,duration) values
+(25,1234,7582,8),
+(7,9999,7582,1),
+(18,9999,3333,4),
+(2,7582,3333,3),
+(3,3333,1234,1),
+(21,3333,1234,1);
+
+select * from calls;
+
+SELECT name FROM phones 
+JOIN calls ON phones.phone_number = calls.caller
+UNION
+SELECT name FROM phones 
+JOIN calls ON phones.phone_number = calls.callee
+GROUP BY name
+HAVING SUM(duration) >10;
+
+
+
+
+--------------------------------------------- TASK3 ------------------------------------------------------------------------
+
+create table transactions(
+Amount integer not null,  
+Date Date not null
+);
+
+
+INSERT INTO transactions(Amount,Date) values 
+(1000,'2020-01-06'),
+(-10,'2020-01-14'),
+(-75,'2020-01-20'),
+(-5,'2020-01-25'),
+(-4,'2020-01-29'),
+(2000,'2020-03-10'),
+(-75,'2020-03-12'),
+(-20,'2020-03-15'),
+(40,'2020-03-15'),
+(-50,'2020-03-17'),
+(200,'2020-10-10'),
+(200,'2020-10-10');
+
+select * from transactions
+
+select CAST(totalamount - 5 *(12 - extract(month from firstt) + 1 - nofeemonths) AS int) as balance
+from (select sum(amount) as totalamount, min(date) as firstt
+      from transactions t
+     ) t cross join
+     (select count(*) as nofeemonths
+      from (select date_trunc('month', date) as months, count(*) as nofeemonths, sum(amount) as totalamount
+            from transactions t
+            where amount < 0
+            group by months
+            having count(*) >= 3 and sum(amount) < -100
+           ) tt
+     ) tt;
